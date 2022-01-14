@@ -1,6 +1,6 @@
 library(lubridate)
 
-load("Rdata/us_casesdeaths.Rdata")
+if(file.exists("Rdata/us_casesdeaths.Rdata")) load("Rdata/us_casesdeaths.Rdata") else lastreadus <- 0 
 if (lastreadus != today()) {
         print("READING NEW DATA FOR US")
         source("import-us-data.r")
@@ -10,8 +10,7 @@ source("process_us_data.r")
 source("extrapolation-sc-with-clean-up.r")
 source("USstates_models.r")
 
-
-load("Rdata/global_casesdeaths.Rdata")
+if(file.exists("Rdata/global_casesdeaths.Rdata")) load("Rdata/global_casesdeaths.Rdata") else lastreadglobal <- 0
 if (lastreadglobal != today()) {
         print("READING NEW DATA FOR GLOBAL")
         source("import-global-data.r")
