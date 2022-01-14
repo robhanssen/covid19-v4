@@ -1,6 +1,7 @@
 # History files
 .Rhistory
 .Rapp.history
+test.r
 
 # Session Data files
 .RData
@@ -37,3 +38,23 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+./Rdata/*.Rdata
+*.Rproj
+*.Rdata
+*.pdf
+*.png
+
+./graphs/*.pdf
+./graphs/*.png
+./projections/*.pdf
+./projections/*.png
+./misc/*.pdf
+./misc/*.png
+./hospitalizations/*.pdf
+./hospitalizations/*.png
+./countrygraphs/*.pdf
+./countrygraphs/*.png
+./continentgraphs/*.pdf
+./continentgraphs/*.png
+
