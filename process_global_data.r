@@ -117,7 +117,7 @@ casesdeaths %>% filter(date > datecutoff) %>% group_by(country) %>%
 ratesbycountry7days %>% filter(!is.na(level), population > 5e6) %>% top_n(30,casesper100k) %>%
                         arrange(-casesper100k) %>% bind_cols(rank=1:30) %>% mutate(country=paste0(country," (",rank,")")) %>%
                         ggplot + aes(x=fct_reorder(country,casesper100k), y=casesper100k, fill=level) + 
-                               scale_y_continuous(breaks=c(2,5,10,20,50,100)) +
+                               scale_y_continuous(breaks=c(2,5,10,20,50,100, 150, 100 * 2:20)) +
                                geom_bar(stat="identity") + 
                                labs(x="Countries with population over 5 million", y="Daily new infection per 100,000 population", caption=caption) +
                                coord_flip() + 
