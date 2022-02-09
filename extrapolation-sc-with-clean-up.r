@@ -16,7 +16,7 @@ find_value <- function(x,y,target=c(0, 2,5,10)) {
 #  extrapolocation for SC data
 # 
 
-FILTERDATE = as.Date("2021-09-01")
+FILTERDATE = today() - days(100)
 
 cdbl <-
     us_casesdeaths %>% 
