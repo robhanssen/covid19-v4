@@ -42,7 +42,7 @@ hd_conversion <- 10
     filter(date > lo_cutoff_date) %>%
     filter(country == "United States") %>%
     ggplot +
-    aes(x = date, y = daily_icu_occupancy) +
+    aes(x = date, y = daily_hospital_occupancy) +
     geom_point() +
     scale_x_date(date_breaks = "2 month", date_labels = "%b\n%Y") +
     scale_y_continuous(labels = comma_format(),
@@ -54,8 +54,8 @@ hd_conversion <- 10
                                            labels = scales::comma_format())
                        ) +
     labs(x = "Date",
-         y = "Hospital ICU beds in use for COVID-19",
-         title = "COVID-19 ICU hospitalization and deaths in the United States",
+         y = "Hospital beds in use for COVID-19",
+         title = "COVID-19 hospitalization and deaths in the United States",
          caption = paste0("Deaths (in red; 7-day daily mean) are shifted back by ", deaths_shift, " days and peak height is increased by factor ", round(hd_conversion, 2),"\n",sources)) + 
     geom_point(data = casesdeaths,
                aes(x = date - days(deaths_shift),
@@ -65,7 +65,7 @@ hd_conversion <- 10
     geom_vline(xintercept = hi_cutoff_date, lty = 2, color = "gray50") + 
     annotate("label", x = lo_cutoff_date + (hi_cutoff_date - lo_cutoff_date)/2 , y = 0, label = "training data", vjust = 0)
 
-ggsave(paste0("hospitalizations/us-modelfit-icu-0.png"), width = 10, height = 10)
+ggsave(paste0("hospitalizations/us-modelfit-hospital-0.png"), width = 10, height = 10)
 
 #
 # Periods: 
@@ -105,7 +105,7 @@ for (t in seq_len(nrow(y))) {
         reg_data <-
             inner_join(reg_hosp, reg_death, by = "date")
 
-        rs  <- lm(deaths_av ~ daily_icu_occupancy + 0,
+        rs  <- lm(deaths_av ~ daily_hospital_occupancy + 0,
                 data = reg_data %>% filter(date > lo_cutoff_date, date < hi_cutoff_date)) %>%
                 broom::glance() %>%
                 pull(r.squared)
@@ -128,15 +128,15 @@ for (t in seq_len(nrow(y))) {
     reg_data <-
         inner_join(reg_hosp, reg_death, by = "date")
 
-    fct  <- lm(deaths_av ~ daily_icu_occupancy + 0,
+    fct  <- lm(deaths_av ~ daily_hospital_occupancy + 0,
                 data = reg_data %>% filter(date > lo_cutoff_date, date < hi_cutoff_date)) %>%
                 broom::tidy() %>%
-                filter(term == "daily_icu_occupancy") %>%
+                filter(term == "daily_hospital_occupancy") %>%
                 pull(estimate)
 
     fct <- 1 / fct
 
-    rsq  <- lm(deaths_av ~ daily_icu_occupancy + 0,
+    rsq  <- lm(deaths_av ~ daily_hospital_occupancy + 0,
                 data = reg_data %>% filter(date > lo_cutoff_date, date < hi_cutoff_date)) %>%
                 broom::glance() %>%
                 pull(r.squared)
@@ -149,7 +149,7 @@ for (t in seq_len(nrow(y))) {
         reg_data %>%
         mutate(color = case_when(date > hi_cutoff_date ~ "test", TRUE ~ "training")) %>%
         ggplot +
-        aes(daily_icu_occupancy, deaths_av, color = color) +
+        aes(daily_hospital_occupancy, deaths_av, color = color) +
         geom_point() +
         geom_abline(slope = 1/fct, intercept = 0) + 
         scale_color_manual(values = c("training" = "blue", "test" = "red")) +
@@ -169,7 +169,7 @@ for (t in seq_len(nrow(y))) {
         filter(date > lo_cutoff_date) %>%
         filter(country == "United States") %>%
         ggplot +
-        aes(x = date, y = daily_icu_occupancy) +
+        aes(x = date, y = daily_hospital_occupancy) +
         geom_point() +
         scale_x_date(date_breaks = "2 month", date_labels = "%b\n%Y") +
         scale_y_continuous(labels = comma_format(),
@@ -181,8 +181,8 @@ for (t in seq_len(nrow(y))) {
                                             labels = scales::comma_format())
                         ) +
         labs(x = "Date",
-            y = "Hospital ICU beds in use for COVID-19",
-            title = "COVID-19 ICU hospitalization and deaths in the United States",
+            y = "Hospital beds in use for COVID-19",
+            title = "COVID-19 hospitalization and deaths in the United States",
             caption = paste0("Deaths (in red; 7-day daily mean) are shifted back by ", deaths_shift, " days and peak height is increased by factor ", round(hd_conversion, 2),"\n",sources)) + 
         geom_point(data = casesdeaths,
                 aes(x = date - days(deaths_shift),
@@ -209,7 +209,7 @@ for (t in seq_len(nrow(y))) {
 
     combined <- timeplot / (rsqplot + datafit)
 
-    ggsave(paste0("hospitalizations/us-modelfit-icu-",t,".png"), width = 10, height =10 , plot = combined)
+    ggsave(paste0("hospitalizations/us-modelfit-hospital-",t,".png"), width = 10, height =10 , plot = combined)
 
 
 }
