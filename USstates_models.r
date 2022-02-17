@@ -10,7 +10,8 @@ load("Rdata/us_casesdeaths.Rdata")
 
 
 statepop <- us_casesdeaths %>% 
-            pivot_wider(c(state, population)) %>%
+            # pivot_wider(c(state, population)) %>%
+            distinct(state, county, population) %>%
             group_by(state) %>%
             summarize(population = sum(population), 
                       .groups = "drop")

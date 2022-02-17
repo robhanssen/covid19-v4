@@ -10,7 +10,8 @@ load("Rdata/us_casesdeaths.Rdata")
 
 
 statepop <- us_casesdeaths %>%
-            pivot_wider(c(state, county, population))
+            # pivot_wider(c(state, county, population))
+            distinct(state, county, population)
 
 min_country_population <- 1
 twoweeksago <- today() - days(14)
