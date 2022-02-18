@@ -4,7 +4,8 @@ load("Rdata/us_casesdeaths.Rdata")
 
 statepop <-
     us_casesdeaths %>%
-    pivot_wider(c(county, state, population)) %>%
+    #pivot_wider(c(county, state, population)) %>%
+    distinct(state, county, population) %>%
     group_by(state) %>%
     summarize(population = sum(population)) %>%
     filter(population != 0)
@@ -70,7 +71,8 @@ ggsave("misc/cumulative-deaths-by-state.png", width = 6, height = 10)
 
 countypop <-
     us_casesdeaths %>%
-    pivot_wider(c(county, state, population)) #%>%
+    #pivot_wider(c(county, state, population)) #%>%
+    distinct(county, state, population)
 
 countrypop <- sum(countypop$population)
 totalcases <- sum(us_casesdeaths$cases)
@@ -104,7 +106,9 @@ us_casesdeaths %>%
 
 countypop <-
     us_casesdeaths %>%
-    pivot_wider(c(county, state, population)) #%>%
+    #pivot_wider(c(county, state, population)) #%>%
+    distinct(county, state, population)
+
 
 countrypop <- sum(countypop$population)
 totalcases <- sum(us_casesdeaths$deaths)

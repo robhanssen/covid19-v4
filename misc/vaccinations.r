@@ -25,8 +25,8 @@ vax <-
     rename(dose1 = "administered_dose1_pop_pct") %>%
     filter(dose1 != 0)
 
-date = pivot_wider(vax, c(date)) %>% mutate(date = format(date, format = "%b %d, %Y")) %>% pull(date)
-
+#date = pivot_wider(vax, c(date)) %>% mutate(date = format(date, format = "%b %d, %Y")) %>% pull(date)
+date <- distinct(vax, date) %>% mutate(date = format(date, format = "%b %d, %Y")) %>% pull(date)
 
 spavax <-
     vax %>%
@@ -94,7 +94,8 @@ electionresults_pop <-
 
 countypop <-
     us_casesdeaths %>%
-    pivot_wider(c(county, state, population)) %>%
+    # pivot_wider(c(county, state, population)) %>%
+    distinct(county, state, population) %>%
     mutate(countyid = paste(county, state, sep = ", ")) %>%
     left_join(electionresults_pop, by = c("countyid"))
 

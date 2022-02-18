@@ -5,7 +5,8 @@ load("Rdata/us_casesdeaths.Rdata")
 
 statepop <-
     us_casesdeaths %>%
-    pivot_wider(c(county, state, population)) %>%
+    #pivot_wider(c(county, state, population)) %>%
+    distinct(county, state, population) %>%
     group_by(state) %>%
     summarize(population = sum(population)) %>%
     filter(population != 0)
