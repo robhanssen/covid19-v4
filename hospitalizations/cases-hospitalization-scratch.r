@@ -36,7 +36,7 @@ reg_hosp <-
 
 averaging_window <- 7
 deaths_shift <- 0
-hd_conversion <- .2
+hd_conversion <- 10
 
     hospitalization %>%
     filter(date > lo_cutoff_date) %>%
@@ -59,13 +59,13 @@ hd_conversion <- .2
          caption = paste0("Deaths (in red; 7-day daily mean) are shifted back by ", deaths_shift, " days and peak height is increased by factor ", round(hd_conversion, 2),"\n",sources)) + 
     geom_point(data = casesdeaths,
                aes(x = date - days(deaths_shift),
-                   y = hd_conversion * zoo::rollmean(cases, averaging_window, na.pad = TRUE)),
+                   y = hd_conversion * zoo::rollmean(deaths, averaging_window, na.pad = TRUE)),
                color = "red") + 
     geom_vline(xintercept = lo_cutoff_date, lty = 2, color = "gray50") +
     geom_vline(xintercept = hi_cutoff_date, lty = 2, color = "gray50") + 
     annotate("label", x = lo_cutoff_date + (hi_cutoff_date - lo_cutoff_date)/2 , y = 0, label = "training data", vjust = 0)
 
-ggsave(paste0("hospitalizations/us-modelfit-cases-0.png"), width = 10, height = 10)
+ggsave(paste0("hospitalizations/us-modelfit-hospital-0.png"), width = 10, height = 10)
 
 #
 # Periods: 
@@ -99,8 +99,8 @@ for (t in seq_len(nrow(y))) {
                     deaths = sum(deaths),
                     .groups = "drop") %>%
             filter(date > lo_cutoff_date) %>%
-            mutate(date = date + time_shift) %>%
-            mutate(deaths_av = zoo::rollmean(cases, 7, na.pad = TRUE))
+            mutate(date = date - time_shift) %>%
+            mutate(deaths_av = zoo::rollmean(deaths, 7, na.pad = TRUE))
 
         reg_data <-
             inner_join(reg_hosp, reg_death, by = "date")
@@ -122,8 +122,8 @@ for (t in seq_len(nrow(y))) {
                 deaths = sum(deaths),
                 .groups = "drop") %>%
         filter(date > lo_cutoff_date) %>%
-        mutate(date = date + optimal_ts) %>%
-        mutate(deaths_av = zoo::rollmean(cases, 7, na.pad = TRUE))
+        mutate(date = date - optimal_ts) %>%
+        mutate(deaths_av = zoo::rollmean(deaths, 7, na.pad = TRUE))
 
     reg_data <-
         inner_join(reg_hosp, reg_death, by = "date")
@@ -154,7 +154,7 @@ for (t in seq_len(nrow(y))) {
         geom_abline(slope = 1/fct, intercept = 0) + 
         scale_color_manual(values = c("training" = "blue", "test" = "red")) +
         labs(caption = "Data in blue is used as training data.\nData in red is test data") + 
-        annotate("label", x = 0, y = 18000, label = fit_summary, hjust = 0) +
+        annotate("label", x = 0, y = 1800, label = fit_summary, hjust = 0) +
         theme(legend.position = "none") + 
         scale_x_continuous(labels = scales::comma_format(), limits = c(0, NA)) + 
         scale_y_continuous(labels = scales::comma_format(), limits = c(0, NA))
@@ -173,20 +173,20 @@ for (t in seq_len(nrow(y))) {
         geom_point() +
         scale_x_date(date_breaks = "2 month", date_labels = "%b\n%Y") +
         scale_y_continuous(labels = comma_format(),
-                        breaks = 1e5 * 0:100,
+                        breaks = 1e4 * 0:100,
                         limits = c(0, NA),
                         sec.axis = sec_axis(~ . / hd_conversion,
-                                            name = "COVID-19 cases",
-                                            breaks = 1e5 * 0:100,
+                                            name = "COVID-19 deaths",
+                                            breaks = 500 * 0:100,
                                             labels = scales::comma_format())
                         ) +
         labs(x = "Date",
             y = "Hospital beds in use for COVID-19",
-            title = "COVID-19 hospitalization and cases in the United States",
-            caption = paste0("Cases (in red; 7-day daily mean) are shifted back by ", deaths_shift, " days and peak height is increased by factor ", round(hd_conversion, 2),"\n",sources)) + 
+            title = "COVID-19 hospitalization and deaths in the United States",
+            caption = paste0("Deaths (in red; 7-day daily mean) are shifted back by ", deaths_shift, " days and peak height is increased by factor ", round(hd_conversion, 2),"\n",sources)) + 
         geom_point(data = casesdeaths,
-                aes(x = date + days(deaths_shift),
-                    y = hd_conversion * zoo::rollmean(cases, averaging_window, na.pad = TRUE)),
+                aes(x = date - days(deaths_shift),
+                    y = hd_conversion * zoo::rollmean(deaths, averaging_window, na.pad = TRUE)),
                 color = "red") + 
         geom_vline(xintercept = lo_cutoff_date, lty = 2, color = "gray50") +
         geom_vline(xintercept = hi_cutoff_date, lty = 2, color = "gray50") + 
@@ -209,7 +209,7 @@ for (t in seq_len(nrow(y))) {
 
     combined <- timeplot / (rsqplot + datafit)
 
-    ggsave(paste0("hospitalizations/us-modelfit-cases-",t,".png"), width = 10, height =10 , plot = combined)
+    ggsave(paste0("hospitalizations/us-modelfit-hospital-",t,".png"), width = 10, height =10 , plot = combined)
 
 
 }
