@@ -5,6 +5,8 @@ library(lubridate)
 
 theme_set(theme_light())
 
+hard_limit <- NA
+
 load("Rdata/us_casesdeaths.Rdata")
 
 find_value <- function(x,y,target=c(0, 2,5,10)) {
@@ -90,7 +92,7 @@ ggplot(data = cdbl_gsp_cleanup) +
     geom_line(aes(y = zoo::rollmean(ccasesper100k, 14, na.pad = TRUE, align = "right")), color = "blue", lty = 2) +
     geom_line(aes(y = zoo::rollmean(ccasesper100k, 14, na.pad = TRUE, align = "center")), color = "darkgreen", lty = 2) +        
     expand_limits(x = max(cdbl_gsp_cleanup$date + 20)) +
-    scale_y_continuous(limit = c(0, NA), breaks = c(0,2,5,10,20,50,100 * 1:20)) +
+    scale_y_continuous(limit = c(0, hard_limit), breaks = c(0,2,5,10,20,50,100 * 1:20)) +
     scale_x_date(breaks = "2 weeks", date_labels = "%b %d") +
     geom_line(data = predict_gsp, aes(y = .fitted), color = "darkgreen", lty = 1) + 
     geom_ribbon(data = predict_gsp, aes(y = .fitted, ymin = .lower, ymax = .upper), fill = "darkgreen", alpha = 0.4) +
@@ -120,9 +122,9 @@ predict_sc_milliken <- cdbl_cleanup %>%
         lm(cases14 ~ date, data=.) %>%
         augment(newdata = next2weeks, interval = "confidence")
 
-date10 = find_value(predict_sc_milliken$date, predict_sc_milliken$.upper, target=10)
+date10 <- find_value(predict_sc_milliken$date, predict_sc_milliken$.upper, target=10)
 
-maskmandate = format(date10, format= "%B %d")
+maskmandate <- format(date10, format= "%B %d")
 
 scplot <-
 ggplot(data = cdbl_cleanup) +
@@ -131,7 +133,7 @@ ggplot(data = cdbl_cleanup) +
     geom_line(aes(y = zoo::rollmean(ccasesper100k, 14, na.pad = TRUE, align = "right")), color = "blue", lty = 2) +
     geom_line(aes(y = zoo::rollmean(ccasesper100k, 14, na.pad = TRUE, align = "center")), color = "darkgreen", lty = 2) +        
     expand_limits(x = max(cdbl_gsp_cleanup$date + 20)) +
-    scale_y_continuous(limit = c(0, NA), breaks = c(0,2,5,10,20,50,100 * 1:20)) +
+    scale_y_continuous(limit = c(0, hard_limit), breaks = c(0,2,5,10,20,50,100 * 1:20)) +
     scale_x_date(breaks = "2 weeks", date_labels = "%b %d") +
     geom_line(data = predict_sc, aes(y = .fitted), color = "darkgreen", lty = 1) + 
     geom_ribbon(data = predict_sc, aes(y = .fitted, ymin = .lower, ymax = .upper), fill = "darkgreen", alpha = 0.4) +
@@ -150,5 +152,5 @@ ggsave("projections/covid19-SC-linearpredict14days.pdf", width=11, height=8, plo
 
 library(patchwork)
 
-p = scplot + gspplot
+p <- scplot + gspplot
 ggsave("projections/covid19-SCGSP-linearpredict14days.png", width=12, height=6, plot = p)
