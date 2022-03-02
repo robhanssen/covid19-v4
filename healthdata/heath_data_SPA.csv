@@ -1,0 +1,4 @@
+date,key,value,assessment
+2022-02-27T00:00:00Z,"Cases per 100,000 population (7 days)",133.53,Low
+2022-02-27T00:00:00Z,"%In-patient beds in use for COVID-19 (Average, 7 days)",8.8,Low
+2022-02-27T00:00:00Z,"Hospitalizations per 100,000 population (7 days)",16.57,High
