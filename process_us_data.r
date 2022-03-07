@@ -175,11 +175,23 @@ casesdeathsbystate %>% filter(date > datecutoff) %>% group_by(state) %>%
 ratesbystate7days %>% ggplot + aes(x=fct_reorder(state,casesper100k), y=casesper100k, fill=level) + 
                                scale_y_continuous(breaks=c(2,5,10,20,50,100 * 1:20)) +
                                geom_bar(stat="identity") + 
-                               labs(x="State", y="Daily new infection per 100,000 population", caption=caption) +
+                               labs(x="State", y="Daily new infections per 100,000 population", caption=caption) +
                                coord_flip() + 
                                scale_fill_manual(values=colorset)
 
 ggsave(paste0("graphs/covid19-casesbystate_ranking.pdf"))
+
+ratesbystate7days %>% ggplot + aes(x=fct_reorder(state,deathsper100k), y=deathsper100k) + 
+                               scale_y_continuous(breaks=c(0, .1 * 1:100)) +
+                               geom_bar(stat="identity") + 
+                               labs(x="State", y="Daily new deaths per 100,000 population", caption=caption) +
+                               coord_flip() + 
+                               scale_y_continuous(limits = c(0, NA)) +
+                               scale_fill_manual(values=colorset)
+
+ggsave(paste0("graphs/covid19-deathsbystate_ranking.pdf"))
+
+
 
 top_state = ratesbystate7days %>% arrange(-casesper100k) %>% head(1) %>% select(state)
 
