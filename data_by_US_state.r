@@ -24,7 +24,7 @@ selected_state = "South Carolina"
 selected_state = "Florida"
 selected_state = "Louisiana"
 selected_state = "Alabama"
-selected_state = "Mississippi"
+selected_state = "Arizona"
 
 us_casesdeaths %>% filter(state==selected_state) %>%
                         group_by(date) %>%
@@ -40,7 +40,7 @@ casesdeathsbylocation %>% filter(date > today() %m-% months(18)) %>%
                 ggplot + aes(date, casesper100k) + geom_line(color="blue", linetype="dotted") + 
                         geom_line(aes(y=rollmean(casesper100k,avdays, na.pad=TRUE)), size=2, color="blue") + 
                         scale_y_continuous(limit=c(0,400), breaks=c(0,2,5,10,20, 50,100*1:10), sec.axis = sec_axis(~ ./correction, breaks=seq(0,5,1))) + 
-                        scale_x_date(date_breaks="1 week", date_labels = "%b %d") + 
+                        scale_x_date(date_breaks="3 months", date_labels = "%b %Y") + 
                         labs(caption=capt, x="Date", y="Daily incremental number of confirmed cases or deaths") + 
                         ggtitle(paste(selected_state,"daily cases and deaths with", avdays,"days average line")) + 
                         geom_line(aes(date, correction*deathsper100k), color="red", linetype="dotted")  + 
@@ -63,7 +63,7 @@ us_casesdeaths %>% filter(state==selected_state, county=="Alachua") %>%
 casesdeathsbylocation %>% filter(date > today() %m-% months(3)) %>%
                 ggplot + aes(date, casesper100k) + geom_line(color="blue", linetype="dotted") + 
                         geom_line(aes(y=rollmean(casesper100k,avdays, na.pad=TRUE)), size=2, color="blue") + 
-                        scale_y_continuous(limit=c(0,20), breaks=c(0,2,5,10,20, 50,100), sec.axis = sec_axis(~ ./correction, breaks=seq(0,5,1))) + 
+                        scale_y_continuous(limit=c(0,NA), breaks=c(0,2,5,10,20, 50,100), sec.axis = sec_axis(~ ./correction, breaks=seq(0,5,1))) + 
                         scale_x_date(date_breaks="1 week", date_labels = "%b %d") + 
                         labs(caption=capt, x="Date", y="Daily incremental number of confirmed cases or deaths") + 
                         ggtitle(paste(selected_state,"daily cases and deaths with", avdays,"days average line")) + 

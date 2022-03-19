@@ -44,9 +44,11 @@ dateformat <- function(d) {
 # summarize country info
 casesdeaths <-
         us_casesdeaths %>%
+            filter(date >= twoweeksago) %>%
             group_by(state, county, date, time) %>%
             summarize(deaths = sum(deaths), cases = sum(cases)) %>%
             inner_join(statepop) %>%
+            filter(!is.na(population), population > min_country_population) %>%
             mutate(casesper100k = cases / population * 1e5,
                    deathsper100k = deaths / population * 1e5)
 
@@ -55,9 +57,6 @@ t0 <- Sys.time()
 print("applying models")
 uscases_twoweeks <-
     casesdeaths %>%
-        filter(date >= twoweeksago) %>%
-        filter(!is.na(population)) %>%
-        filter(population > min_country_population) %>%
         mutate(countyid = paste(county, state, sep = ", ")) %>%
         arrange(countyid, date) %>%
         group_by(countyid) %>%
