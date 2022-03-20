@@ -44,7 +44,7 @@ casesdeaths <-
             group_by(country, date, time) %>% 
             summarize(deaths=sum(deaths), cases=sum(cases)) %>%
             full_join(locations, by=c(country="region")) %>%
-            filter(!is.na(population)) %>%
+            filter(!is.na(population), !is.na(date)) %>%
             filter(population > min_country_population) %>% 
             mutate(casesper100k = cases / population * 1e5,
                    deathsper100k = deaths / population * 1e5)
