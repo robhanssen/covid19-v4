@@ -20,7 +20,7 @@ source("process_global_data.r")
 source("worldmodels.r")
 
 # misc. script runs
-#source("hospitalizations/hosp-run-all.r")
+source("hospitalizations/hosp-run-all.r")
 source("misc/covid_and_2020elections.r")
 #source("misc/comparison_of_countries_and_states.r")
 source("UScounty_models.r")
