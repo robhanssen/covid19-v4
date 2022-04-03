@@ -11,14 +11,10 @@ load("Rdata/vaccination.Rdata")
 load("Rdata/us_casesdeaths.Rdata")
 statepop <-
     us_casesdeaths %>%
-    pivot_wider(c(county, state, population)) %>%
+    distinct(state, county, population) %>%
     group_by(state) %>%
     summarise(population = sum(population)) %>%
     inner_join(tibble(stateabb = state.abb, state = state.name))
-
-
-
-
 
 vaccinations %>%
     colnames()
