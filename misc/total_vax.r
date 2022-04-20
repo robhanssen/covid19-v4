@@ -1,6 +1,6 @@
 library(tidyverse)
 library(lubridate)
-themeset(theme_light())
+theme_set(theme_light())
 
 colorscale <- scales::seq_gradient_pal("blue", "red", "Lab")(seq(0,1,length.out=10))
 
