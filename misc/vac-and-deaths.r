@@ -25,7 +25,7 @@ cutoff_date <- as.Date("2021-04-01")
 
 countypop <-
     us_casesdeaths %>%
-    pivot_wider(c(county, state, population)) %>%
+    distinct(county, state, population) %>%
     mutate(countyid = paste(county, state, sep = ", "))
 
 countydeaths <-

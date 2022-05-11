@@ -21,7 +21,7 @@ electionresults <- read_csv("sources/2020electionresults.csv") %>%
 #                 summarize(population = sum(population))
 
 statepop <- us_casesdeaths %>%
-                pivot_wider(c(county, state,population))
+                distinct(county, state, population)
 
 
 # define constants
