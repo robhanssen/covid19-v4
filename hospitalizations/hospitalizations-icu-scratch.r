@@ -75,7 +75,7 @@ ggsave(paste0("hospitalizations/us-modelfit-icu-0.png"), width = 10, height = 10
 # 11/1/2021 - TODAY
 
 
-period_boundary <- c(as.Date(c("2020-07-15","2020-10-01","2021-07-01","2021-11-01", "2021-12-28")), today())
+period_boundary <- c(as.Date(c("2020-07-15","2020-10-01","2021-07-01","2021-11-01", "2021-12-28", "2022-04-15")), today())
 
 x <- tibble(pb = period_boundary, period = interval(lag(pb), (pb))) %>% filter(pb != first(period_boundary)) %>% select(period)
 
