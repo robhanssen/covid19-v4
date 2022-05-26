@@ -34,9 +34,9 @@ cdbl <-
 
 cdbl_cleanup <-
     cdbl %>%
-        mutate(dow = weekdays(date)) %>%
-        filter(!dow %in% c("Saturday", "Sunday")) %>%
-        mutate(ccasesper100k = ifelse(dow == "Monday", casesper100k / 3, casesper100k)) %>%
+        # mutate(dow = weekdays(date)) %>%
+        filter(casesper100k > 0) %>%
+        mutate(ccasesper100k = casesper100k / 7) %>%
         mutate(cases14 = zoo::rollmeanr(ccasesper100k, 14, na.pad = TRUE))        
 
 # 
@@ -54,9 +54,9 @@ us_casesdeaths %>% filter(state=="South Carolina", county=="Greenville" | county
 
 cdbl_gsp_cleanup <-
     cdbl_gsp %>%
-        mutate(dow = weekdays(date)) %>%
-        filter(!dow %in% c("Saturday", "Sunday")) %>%
-        mutate(ccasesper100k = ifelse(dow == "Monday", casesper100k / 3, casesper100k)) %>%
+        # mutate(dow = weekdays(date)) %>%
+        filter(casesper100k > 0) %>%
+        mutate(ccasesper100k = casesper100k / 7) %>%
         mutate(cases14 = zoo::rollmeanr(ccasesper100k, 14, na.pad = TRUE))
 
 
