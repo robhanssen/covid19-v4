@@ -51,7 +51,7 @@ countystatus <- function(countyinfo) {
         mutate(assessment = case_when(
             key == "Cases per 100,000 population (7 days)" ~ cut(value, c(0, 200, 1e6), c("Low", "High")),
             key == "%In-patient beds in use for COVID-19 (Average, 7 days)" ~ cut(value, c(0, 10, 15), c("Low", "High")),
-            key == "Hospitalizations per 100,000 population (7 days)" ~ cut(value, c(0, 10, 20), c("Low", "High"))
+            key == "Hospitalizations per 100,000 population (7 days)" ~ cut(value, c(0, 10, 80), c("Low", "High"))
         )) %>%
         mutate(county = countyinfo$county) %>%
         relocate(county)
