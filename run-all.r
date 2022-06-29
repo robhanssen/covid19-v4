@@ -7,7 +7,7 @@ if (lastreadus != today()) {
 }
 
 source("process_us_data.r")
-source("extrapolation-sc-with-clean-up.r")
+# source("extrapolation-sc-with-clean-up.r")
 source("USstates_models.r")
 
 if (file.exists("Rdata/global_casesdeaths.Rdata")) load("Rdata/global_casesdeaths.Rdata") else lastreadglobal <- 0
