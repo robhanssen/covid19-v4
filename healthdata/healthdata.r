@@ -1,7 +1,9 @@
 # healthdata
 library(tidyverse)
+library(patchwork)
+theme_set(theme_light())
 
-source_origin <- "https://healthdata.gov/resource/di4u-7yu6.csv?fips="
+source_origin <- "https://data.cdc.gov/resource/3nnm-4jni.csv?county_fips="
 
 load("Rdata/county_data.Rdata")
 
@@ -26,39 +28,58 @@ countystatus <- function(countyinfo) {
     health_summary <-
         healthdata %>%
         select(
-            date,
-            cases_per_100k_last_7_days,
-            confirmed_covid_hosp_last_7_days,
-            suspected_covid_hosp_last_7_days,
-            confirmed_covid_hosp_last_7_days,
-            pct_inpatient_beds_used_covid_avg_last_7_days
+            date_updated,
+            covid_cases_per_100k,
+            covid_hospital_admissions_per_100k,
+            covid_inpatient_bed_utilization,
+            covid_19_community_level
         ) %>%
-        mutate(hosp_per_100k = (confirmed_covid_hosp_last_7_days + suspected_covid_hosp_last_7_days) / countyinfo$population * 1e5) %>%
-        select(
-            -suspected_covid_hosp_last_7_days,
-            -confirmed_covid_hosp_last_7_days
-        ) %>%
-        mutate(across(starts_with("pct"), .fns = ~ .x * 100)) %>%
-        rename(
-            "Cases per 100,000 population (7 days)" = cases_per_100k_last_7_days,
-            "%In-patient beds in use for COVID-19 (Average, 7 days)" = pct_inpatient_beds_used_covid_avg_last_7_days,
-            "Hospitalizations per 100,000 population (7 days)" = hosp_per_100k
-        ) %>%
-        pivot_longer(!date, names_to = "key", values_to = "value") %>%
-        mutate(value = round(value, 2))
+        mutate(date = as.Date(date_updated)) %>%
+        select(-date_updated)
 
     health_summary %>%
-        mutate(assessment = case_when(
-            key == "Cases per 100,000 population (7 days)" ~ cut(value, c(0, 200, 1e6), c("Low", "High")),
-            key == "%In-patient beds in use for COVID-19 (Average, 7 days)" ~ cut(value, c(0, 10, 15), c("Low", "High")),
-            key == "Hospitalizations per 100,000 population (7 days)" ~ cut(value, c(0, 10, 80), c("Low", "High"))
-        )) %>%
         mutate(county = countyinfo$county) %>%
         relocate(county)
 }
 
 j <-
     map_df(seq_len(nrow(counties)), ~ countystatus(counties[.x, ])) %>%
-    relocate(county, assessment, key, value, date)
+    group_by(county) %>% # slice_max(date, n = 3) %>%
+    relocate(county, covid_19_community_level, date) %>%
+    arrange(county, date)
 
-write_csv(j, "healthdata/countyinfo.csv")
+p1 <-
+    j %>%
+    ggplot() +
+    aes(date, covid_cases_per_100k, color = county) +
+    geom_line() +
+    geom_hline(yintercept = c(200), lty = 2) +
+    labs(x = "Date", y = "Cases per 100,000") + 
+    theme(legend.position = "none") +
+    facet_wrap(~county, ncol = 3)
+
+p2 <-
+    j %>%
+    ggplot() +
+    aes(date, covid_hospital_admissions_per_100k, color = county) +
+    geom_line() +
+    geom_hline(yintercept = c(10, 15), lty = 2) +
+    labs(x = "Date", y = "Hospital admission per 100,000") + 
+    theme(legend.position = "none") +
+    facet_wrap(~county, ncol = 3)
+
+p3 <-
+    j %>%
+    ggplot() +
+    aes(date, covid_inpatient_bed_utilization, color = county) +
+    geom_line() +
+    geom_hline(yintercept = c(10, 15), lty = 2) +
+    labs(x = "Date", y = "Bed utilization") +
+    theme(legend.position = "none") +
+    facet_wrap(~county, ncol = 3)
+
+plot <- p1 / p2 / p3
+
+ggsave("healthdata/healthdata.png", height = 8, width = 8, plot = plot)
+
+write_csv(j %>% slice_max(date), "healthdata/countyinfo.csv")
