@@ -48,13 +48,16 @@ j <-
     relocate(county, covid_19_community_level, date) %>%
     arrange(county, date)
 
+max_date <- max(j$date)
+
 p1 <-
     j %>%
     ggplot() +
     aes(date, covid_cases_per_100k, color = county) +
     geom_line() +
     geom_hline(yintercept = c(200), lty = 2) +
-    labs(x = "Date", y = "Cases per 100,000") + 
+    labs(x = "Date", y = "Cases per 100,000",
+        title = paste0("COVID-19 risk assessment: ", format(max_date, format = "%b %d, %Y"))) + 
     theme(legend.position = "none") +
     facet_wrap(~county, ncol = 3)
 
