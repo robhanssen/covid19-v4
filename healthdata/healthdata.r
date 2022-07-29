@@ -56,8 +56,11 @@ p1 <-
     aes(date, covid_cases_per_100k, color = county) +
     geom_line() +
     geom_hline(yintercept = c(200), lty = 2) +
-    labs(x = "Date", y = "Cases per 100,000",
-        title = paste0("COVID-19 risk assessment: ", format(max_date, format = "%b %d, %Y"))) + 
+    labs(
+        x = "Date", y = "Cases per 100,000",
+        title = paste0("COVID-19 risk assessment: ",
+                        format(max_date, format = "%b %d, %Y"))
+    ) +
     theme(legend.position = "none") +
     facet_wrap(~county, ncol = 3)
 
@@ -67,7 +70,7 @@ p2 <-
     aes(date, covid_hospital_admissions_per_100k, color = county) +
     geom_line() +
     geom_hline(yintercept = c(10, 15), lty = 2) +
-    labs(x = "Date", y = "Hospital admission per 100,000") + 
+    labs(x = "Date", y = "Hospital admission per 100,000") +
     theme(legend.position = "none") +
     facet_wrap(~county, ncol = 3)
 
@@ -86,3 +89,21 @@ plot <- p1 / p2 / p3
 ggsave("healthdata/healthdata.png", height = 8, width = 8, plot = plot)
 
 write_csv(j %>% slice_max(date), "healthdata/countyinfo.csv")
+
+levelcolor <- c(
+    "Low" = "darkgreen",
+    "Medium" = "orange",
+    "High" = "red"
+)
+
+j %>%
+    mutate(level = factor(covid_19_community_level,
+        level = c("Low", "Medium", "High")
+    )) %>%
+    filter(!is.na(level)) %>%
+    ggplot(aes(x = date, y = level)) +
+    geom_point(size = 2, aes(color = level)) +
+    facet_wrap(~county) +
+    scale_color_manual(values = levelcolor)
+
+ggsave("healthdata/levelchart.png", width = 9, height = 6)
