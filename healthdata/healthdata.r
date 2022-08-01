@@ -90,7 +90,7 @@ p3 <-
 
 plot <- p1 / p2 / p3
 
-ggsave("healthdata/levelchart_1.png", width = 9, height = 9, plot = plot)
+ggsave("healthdata/levelchart.png", width = 9, height = 9, plot = plot)
 
 
 level_by_county <-
@@ -105,7 +105,22 @@ statemapdata <- as_tibble(map_data("county")) %>%
     rename(state = region, county = subregion) %>%
     inner_join(level_by_county)
 
-ggplot(data = statemapdata) +
+allstates <-
+    ggplot(data = statemapdata) +
+    geom_polygon(aes(
+        x = long,
+        y = lat,
+        fill = covid_19_community_level,
+        group = group
+    ),
+    # color = "white"
+    ) +
+    scale_fill_manual(values = levelcolor) +
+    theme(legend.position = "none") +
+    coord_fixed(1.4)
+
+scplot <-
+    ggplot(data = statemapdata %>% filter(state == "south carolina")) +
     geom_polygon(aes(
         x = long,
         y = lat,
@@ -114,8 +129,10 @@ ggplot(data = statemapdata) +
     ),
     color = "white"
     ) +
+    scale_x_continuous(limit = c(-85, -77)) +
+    scale_y_continuous(limit = c(32, 35.5)) +
     scale_fill_manual(values = levelcolor) +
     theme(legend.position = "none") +
     coord_fixed(1.4)
 
-ggsave("healthdata/us_map_covidlevel.png")
+ggsave("healthdata/us_map_covidlevel.png", width = 6, height = 12, plot = allstates / scplot)
