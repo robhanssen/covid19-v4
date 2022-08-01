@@ -3,8 +3,6 @@ library(tidyverse)
 library(patchwork)
 theme_set(theme_light())
 
-source_origin <- "https://data.cdc.gov/resource/3nnm-4jni.csv?county_fips="
-
 load("Rdata/county_data.Rdata")
 
 countylist <- tribble(
@@ -14,58 +12,64 @@ countylist <- tribble(
     "Alachua", "Florida"
 )
 
+levelcolor <- c(
+    "Low" = "darkgreen",
+    "Medium" = "orange",
+    "High" = "red"
+)
+
 counties <-
     countylist %>%
     left_join(county_data) %>%
-    distinct(state, county, population, fips) %>%
-    mutate(source = paste0(source_origin, fips))
+    distinct(state, county, population, fips)
+
+source_origin <- "https://data.cdc.gov/resource/3nnm-4jni.csv?$limit=10000000"
+
+healthdata <- read_csv(source_origin) %>%
+    janitor::clean_names()
+
+covid_levels <-
+    healthdata %>%
+    inner_join(counties, by = c("county_fips" = "fips")) %>%
+    mutate(date = as.Date(date_updated)) %>%
+    select(
+        county.x,
+        state.x,
+        date,
+        covid_inpatient_bed_utilization,
+        covid_cases_per_100k,
+        covid_hospital_admissions_per_100k,
+        covid_19_community_level
+    ) %>%
+    rename(
+        county = county.x,
+        state = state.x,
+    ) %>%
+    relocate(county, state, covid_19_community_level)
 
 
-countystatus <- function(countyinfo) {
-    healthdata <- read_csv(countyinfo$source) %>%
-        janitor::clean_names()
+write_csv(covid_levels %>% slice_max(date), "healthdata/countyinfo.csv")
 
-    health_summary <-
-        healthdata %>%
-        select(
-            date_updated,
-            covid_cases_per_100k,
-            covid_hospital_admissions_per_100k,
-            covid_inpatient_bed_utilization,
-            covid_19_community_level
-        ) %>%
-        mutate(date = as.Date(date_updated)) %>%
-        select(-date_updated)
-
-    health_summary %>%
-        mutate(county = countyinfo$county) %>%
-        relocate(county)
-}
-
-j <-
-    map_df(seq_len(nrow(counties)), ~ countystatus(counties[.x, ])) %>%
-    group_by(county) %>% # slice_max(date, n = 3) %>%
-    relocate(county, covid_19_community_level, date) %>%
-    arrange(county, date)
-
-max_date <- max(j$date)
+max_date <- max(covid_levels$date)
 
 p1 <-
-    j %>%
+    covid_levels %>%
     ggplot() +
     aes(date, covid_cases_per_100k, color = county) +
     geom_line() +
     geom_hline(yintercept = c(200), lty = 2) +
     labs(
         x = "Date", y = "Cases per 100,000",
-        title = paste0("COVID-19 risk assessment: ",
-                        format(max_date, format = "%b %d, %Y"))
+        title = paste0(
+            "COVID-19 risk assessment: ",
+            format(max_date, format = "%b %d, %Y")
+        )
     ) +
     theme(legend.position = "none") +
     facet_wrap(~county, ncol = 3)
 
 p2 <-
-    j %>%
+    covid_levels %>%
     ggplot() +
     aes(date, covid_hospital_admissions_per_100k, color = county) +
     geom_line() +
@@ -75,7 +79,7 @@ p2 <-
     facet_wrap(~county, ncol = 3)
 
 p3 <-
-    j %>%
+    covid_levels %>%
     ggplot() +
     aes(date, covid_inpatient_bed_utilization, color = county) +
     geom_line() +
@@ -86,24 +90,32 @@ p3 <-
 
 plot <- p1 / p2 / p3
 
-ggsave("healthdata/healthdata.png", height = 8, width = 8, plot = plot)
+ggsave("healthdata/levelchart_1.png", width = 9, height = 9, plot = plot)
 
-write_csv(j %>% slice_max(date), "healthdata/countyinfo.csv")
 
-levelcolor <- c(
-    "Low" = "darkgreen",
-    "Medium" = "orange",
-    "High" = "red"
-)
+level_by_county <-
+    healthdata %>%
+    group_by(county_fips) %>%
+    slice_max(date_updated) %>%
+    select(county_fips, county, state, covid_19_community_level) %>%
+    mutate(across(county:state, tolower)) %>%
+    mutate(county = str_remove(county, " county"))
 
-j %>%
-    mutate(level = factor(covid_19_community_level,
-        level = c("Low", "Medium", "High")
-    )) %>%
-    filter(!is.na(level)) %>%
-    ggplot(aes(x = date, y = level)) +
-    geom_point(size = 2, aes(color = level)) +
-    facet_wrap(~county) +
-    scale_color_manual(values = levelcolor)
+statemapdata <- as_tibble(map_data("county")) %>%
+    rename(state = region, county = subregion) %>%
+    inner_join(level_by_county)
 
-ggsave("healthdata/levelchart.png", width = 9, height = 6)
+ggplot(data = statemapdata) +
+    geom_polygon(aes(
+        x = long,
+        y = lat,
+        fill = covid_19_community_level,
+        group = group
+    ),
+    color = "white"
+    ) +
+    scale_fill_manual(values = levelcolor) +
+    theme(legend.position = "none") +
+    coord_fixed(1.4)
+
+ggsave("healthdata/us_map_covidlevel.png")
