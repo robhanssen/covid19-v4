@@ -13,9 +13,9 @@ countylist <- tribble(
 )
 
 levelcolor <- c(
-    "Low" = "darkgreen",
-    "Medium" = "orange",
-    "High" = "red"
+    "low" = "darkgreen",
+    "medium" = "orange",
+    "high" = "red"
 )
 
 counties <-
@@ -26,7 +26,11 @@ counties <-
 source_origin <- "https://data.cdc.gov/resource/3nnm-4jni.csv?$limit=10000000"
 
 healthdata <- read_csv(source_origin) %>%
-    janitor::clean_names()
+    janitor::clean_names() %>%
+    mutate(covid_19_community_level = tolower(covid_19_community_level)) %>%
+    mutate(covid_19_community_level = ifelse(covid_19_community_level == "n/a", NA, covid_19_community_level)) %>%
+    mutate(covid_19_community_level = factor(covid_19_community_level, levels = c("low", "medium", "high")))
+
 
 covid_levels <-
     healthdata %>%
@@ -136,3 +140,11 @@ scplot <-
     coord_fixed(1.4)
 
 ggsave("healthdata/us_map_covidlevel.png", width = 6, height = 12, plot = allstates / scplot)
+
+healthdata %>%
+    group_by(county) %>%
+    slice_max(date_updated) %>%
+    ungroup() %>%
+    count(covid_19_community_level) %>%
+    ggplot + aes(covid_19_community_level, n, fill = covid_19_community_level) +
+    scale_fill_manual(values = levelcolor) + geom_col()
