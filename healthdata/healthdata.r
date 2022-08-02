@@ -94,8 +94,18 @@ p3 <-
 
 plot <- p1 / p2 / p3
 
-ggsave("healthdata/levelchart.png", width = 9, height = 9, plot = plot)
+ggsave("healthdata/levelsovertime.png", width = 9, height = 9, plot = plot)
 
+lvl <-
+    covid_levels %>%
+    ggplot +
+    aes(x = date, y = covid_19_community_level) + 
+    geom_point(aes(color = covid_19_community_level)) + 
+    facet_wrap(~county) + 
+    scale_color_manual(values = levelcolor) + 
+    theme(legend.position = "none")
+
+ggsave("healthdata/levelchart.png", width = 9, height = 9, plot = lvl)
 
 level_by_county <-
     healthdata %>%
