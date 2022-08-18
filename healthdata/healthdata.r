@@ -25,10 +25,9 @@ counties <-
 
 source_origin <- "https://data.cdc.gov/resource/3nnm-4jni.csv?$limit=10000000"
 
-healthdata <- read_csv(source_origin) %>%
+healthdata <- read_csv(source_origin, na = "n/a") %>%
     janitor::clean_names() %>%
     mutate(covid_19_community_level = tolower(covid_19_community_level)) %>%
-    mutate(covid_19_community_level = ifelse(covid_19_community_level == "n/a", NA, covid_19_community_level)) %>%
     mutate(covid_19_community_level = factor(covid_19_community_level, levels = c("low", "medium", "high")))
 
 
@@ -37,17 +36,13 @@ covid_levels <-
     inner_join(counties, by = c("county_fips" = "fips")) %>%
     mutate(date = as.Date(date_updated)) %>%
     select(
-        county.x,
-        state.x,
+        county = county.x,
+        state = state.x,
         date,
         covid_inpatient_bed_utilization,
         covid_cases_per_100k,
         covid_hospital_admissions_per_100k,
         covid_19_community_level
-    ) %>%
-    rename(
-        county = county.x,
-        state = state.x,
     ) %>%
     relocate(county, state, covid_19_community_level)
 
