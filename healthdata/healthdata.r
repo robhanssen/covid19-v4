@@ -208,28 +208,28 @@ country_health_data %>%
 ggsave("healthdata/country-wide-assessment.png", width = 8, height = 5)
 
 
-p_5 <- healthdata %>%
-    mutate(date = as.Date(date_updated)) %>%
-    ggplot(aes(x = date, y = covid_cases_per_100k, group = county_fips)) + 
-    geom_line(alpha = .1) + 
-    # scale_y_continuous(limits = c(0, 500)) + 
-    coord_cartesian(ylim = c(0, 500)) +
-    geom_smooth(aes(group = NULL), method = "loess", color = "white",se = FALSE) + 
-    labs(x = "",
-        y = "New COVID-19 cases\nper week per 100k")
+# p_5 <- healthdata %>%
+#     mutate(date = as.Date(date_updated)) %>%
+#     ggplot(aes(x = date, y = covid_cases_per_100k, group = county_fips)) + 
+#     geom_line(alpha = .1) + 
+#     # scale_y_continuous(limits = c(0, 500)) + 
+#     coord_cartesian(ylim = c(0, 500)) +
+#     geom_smooth(aes(group = NULL), method = "loess", color = "white",se = FALSE) + 
+#     labs(x = "",
+#         y = "New COVID-19 cases\nper week per 100k")
 
 
-p_6 <- healthdata %>%
-    mutate(date = as.Date(date_updated)) %>%
-    ggplot(aes(x = date, y = covid_hospital_admissions_per_100k, group = county_fips)) + 
-    geom_line(alpha = .1) + 
-    # scale_y_continuous(limits = c(0, 500)) + 
-    coord_cartesian(ylim = c(0, 30)) +
-    geom_smooth(aes(group = NULL), method = "loess", color = "white",se = FALSE) + 
-    labs(x = "",
-        y = "New COVID-19 hospital admission\nper week per 100k")
+# p_6 <- healthdata %>%
+#     mutate(date = as.Date(date_updated)) %>%
+#     ggplot(aes(x = date, y = covid_hospital_admissions_per_100k, group = county_fips)) + 
+#     geom_line(alpha = .1) + 
+#     # scale_y_continuous(limits = c(0, 500)) + 
+#     coord_cartesian(ylim = c(0, 30)) +
+#     geom_smooth(aes(group = NULL), method = "loess", color = "white",se = FALSE) + 
+#     labs(x = "",
+#         y = "New COVID-19 hospital admission\nper week per 100k")
 
-ggsave("healthdata/bigsmooth.png", plot = p_5 + p_6)
+# ggsave("healthdata/bigsmooth.png", plot = p_5 + p_6)
 
 covid_state_data <-
     healthdata %>%
