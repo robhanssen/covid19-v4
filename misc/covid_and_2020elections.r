@@ -362,7 +362,7 @@ ggsave("misc/covid_and_election_bydate_deaths.pdf", width = 11, height = 8, plot
 elec_breaks <- c(0, .3, .45, .55, .7, 1)
 
 elec_labels <- c("Strong Biden", "Medium Biden", "Neutral", "Medium Trump", "Strong Trump")
-elec_color <- c("Strong Biden" = "darkblue", "Medium Biden" = "dodgerblue", "Neutral" = "gray50", "Medium Trump" = "maroon", "Strong Trump" = "red")
+elec_color <- c("Strong Biden" = "blue", "Medium Biden" = "dodgerblue", "Neutral" = "gray50", "Medium Trump" = "maroon", "Strong Trump" = "red")
 
 
 covidbyelections <- us_casesdeaths %>%
@@ -390,13 +390,15 @@ labels <-
         mutate(date = date + days(7))
 
 captext <-
-        glue::glue("Strong: >{scales::percent(elec_breaks)[5]} support\n",
-                   "Medium: {scales::percent(elec_breaks)[4]}-{scales::percent(elec_breaks)[5]} support\n",
-                   "Neutral: {scales::percent(elec_breaks)[3]}-{scales::percent(elec_breaks)[4]}"
-)
+        glue::glue(
+                "Based on 2020 Presidential Elecion voting\n",
+                "Strong: >{scales::percent(elec_breaks)[5]} support\n",
+                "Medium: {scales::percent(elec_breaks)[4]}-{scales::percent(elec_breaks)[5]} support\n",
+                "Neutral: {scales::percent(elec_breaks)[3]}-{scales::percent(elec_breaks)[4]}"
+        )
 
 
-deathgraph <-
+cumdeathgraph <-
         covidbyelections %>%
         ggplot() +
         aes(x = date, y = deaths, color = gop_vic) +
@@ -405,7 +407,7 @@ deathgraph <-
         scale_color_manual(values = elec_color) +
         labs(
                 x = "Date",
-                y = "Deaths per 100,000 population",
+                y = "Cumulative deaths\nper 100,000 population",
                 color = "County vote"
         ) +
         ggrepel::geom_label_repel(
@@ -415,7 +417,7 @@ deathgraph <-
                 hjust = 0
         )
 
-casegraph <-
+cumcasegraph <-
         covidbyelections %>%
         ggplot() +
         aes(x = date, y = cases, color = gop_vic) +
@@ -424,7 +426,7 @@ casegraph <-
         scale_color_manual(values = elec_color) +
         labs(
                 x = "Date",
-                y = "Cases per 100,000 population",
+                y = "Cumulative cases\nper 100,000 population",
                 color = "County vote"
         ) +
         ggrepel::geom_label_repel(
@@ -434,6 +436,11 @@ casegraph <-
                 hjust = 0
         )
 
-casegraph + deathgraph + plot_annotation(caption = captext)
+cumcasegraph +
+        cumdeathgraph +
+        plot_annotation(
+                caption = captext,
+                title = "Voting patterns did not influence the spread of COVID-19, but strongly affected the death rate in a county"
+        )
 
 ggsave("misc/cumulative_covid_by_vote.png", width = 12, height = 6)
