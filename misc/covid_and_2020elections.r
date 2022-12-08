@@ -379,14 +379,18 @@ covidbyelections <- us_casesdeaths %>%
         ungroup() %>%
         arrange(date, gop_vic) %>%
         group_by(gop_vic) %>%
-        mutate(cases = cumsum(cases) / population * 1e5, deaths = cumsum(deaths) / population * 1e5) %>%
+        mutate(
+               caserate = cumsum(cases) / population * 1e5, 
+               deathrate = cumsum(deaths) / population * 1e5,
+               totalcases = cumsum(cases),
+               totaldeath = cumsum(deaths)) %>%
         ungroup()
 
 
 labels <-
         covidbyelections %>%
         group_by(gop_vic) %>%
-        slice_max(deaths, n = 1) %>%
+        slice_max(deathrate, n = 1) %>%
         mutate(date = date + days(7))
 
 captext <-
@@ -401,7 +405,7 @@ captext <-
 cumdeathgraph <-
         covidbyelections %>%
         ggplot() +
-        aes(x = date, y = deaths, color = gop_vic) +
+        aes(x = date, y = deathrate, color = gop_vic) +
         geom_line(size = 1, alpha = .75, show.legend = FALSE) +
         theme_light() +
         scale_color_manual(values = elec_color) +
@@ -412,7 +416,7 @@ cumdeathgraph <-
         ) +
         ggrepel::geom_label_repel(
                 data = labels,
-                aes(x = date, y = deaths, label = gop_vic),
+                aes(x = date, y = deathrate, label = gop_vic),
                 show.legend = FALSE,
                 hjust = 0
         )
@@ -420,7 +424,7 @@ cumdeathgraph <-
 cumcasegraph <-
         covidbyelections %>%
         ggplot() +
-        aes(x = date, y = cases, color = gop_vic) +
+        aes(x = date, y = caserate, color = gop_vic) +
         geom_line(size = 1, alpha = .75, show.legend = FALSE) +
         theme_light() +
         scale_color_manual(values = elec_color) +
@@ -431,7 +435,7 @@ cumcasegraph <-
         ) +
         ggrepel::geom_label_repel(
                 data = labels,
-                aes(x = date, y = cases, label = gop_vic),
+                aes(x = date, y = caserate, label = gop_vic),
                 show.legend = FALSE,
                 hjust = 0
         )
@@ -444,3 +448,62 @@ cumcasegraph +
         )
 
 ggsave("misc/cumulative_covid_by_vote.png", width = 12, height = 6)
+
+covidbyelections %>%
+        ggplot() +
+        aes(x = date, y = totaldeath, color = gop_vic) +
+        geom_line(size = 1, alpha = .75, show.legend = FALSE) +
+        theme_light() +
+        scale_color_manual(values = elec_color) +
+        scale_y_continuous(labels = scales::label_number()) +
+        labs(
+                x = "Date",
+                y = "Cumulative deaths",
+                color = "County vote"
+        ) +
+        ggrepel::geom_label_repel(
+                data = labels,
+                aes(x = date, y = totaldeath, label = gop_vic),
+                show.legend = FALSE,
+                hjust = 0
+        )
+
+
+covidbyelections %>%
+        ggplot() +
+        aes(x = date, y = totalcases, color = gop_vic) +
+        geom_line(size = 1, alpha = .75, show.legend = FALSE) +
+        theme_light() +
+        scale_color_manual(values = elec_color) +
+        scale_y_continuous(labels = scales::label_number()) +
+        labs(
+                x = "Date",
+                y = "Cumulative deaths",
+                color = "County vote"
+        ) +
+        ggrepel::geom_label_repel(
+                data = labels,
+                aes(x = date, y = totalcases, label = gop_vic),
+                show.legend = FALSE,
+                hjust = 0
+        )
+
+
+covidbyelections %>% filter(date > ymd(20200701)) %>%
+        ggplot() + 
+        aes(x = date, y = totaldeath / totalcases, color = gop_vic) +
+        geom_line(size = 1, alpha = .75, show.legend = FALSE) +
+        theme_light() +
+        scale_color_manual(values = elec_color) +
+        scale_y_continuous(labels = scales::label_percent(), limits = c(0, NA)) +
+        labs(
+                x = "Date",
+                y = "Cumulative deaths",
+                color = "County vote"
+        ) # +
+        # ggrepel::geom_label_repel(
+        #         data = labels,
+        #         aes(x = date, y = totalcases, label = gop_vic),
+        #         show.legend = FALSE,
+        #         hjust = 0
+        # )
