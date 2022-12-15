@@ -8,8 +8,8 @@ load("Rdata/us_casesdeaths.Rdata")
 colorset <- c("TRUE" = "darkgreen", "FALSE" = "red")
 
 counties <- us_casesdeaths %>%
-        select(state, county, population) %>%
-        pivot_wider(c(state, county, population)) %>%
+        distinct(state, county, population) %>%
+        # pivot_wider(c(state, county, population)) %>%
         mutate(state = toupper(state), county = toupper(county))
 
 countymapdata <- as_tibble(map_data("county")) %>%
