@@ -395,7 +395,7 @@ labels <-
 
 captext <-
         glue::glue(
-                "Based on 2020 Presidential Elecion voting\n",
+                "Based on 2020 Presidential Election voting\n",
                 "Strong: >{scales::percent(elec_breaks)[5]} support\n",
                 "Medium: {scales::percent(elec_breaks)[4]}-{scales::percent(elec_breaks)[5]} support\n",
                 "Neutral: {scales::percent(elec_breaks)[3]}-{scales::percent(elec_breaks)[4]}"
