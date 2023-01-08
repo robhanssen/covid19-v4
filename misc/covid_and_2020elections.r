@@ -391,6 +391,8 @@ labels <-
         covidbyelections %>%
         group_by(gop_vic) %>%
         slice_max(deathrate, n = 1) %>%
+        filter(cases != 0, deaths != 0) %>%
+        # distinct(date, gop_vic, caserate, deathrate) %>%
         mutate(date = date + days(7))
 
 captext <-
