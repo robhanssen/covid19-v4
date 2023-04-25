@@ -28,7 +28,9 @@ source_origin <- "https://data.cdc.gov/resource/3nnm-4jni.csv?$limit=10000000"
 healthdata <- read_csv(source_origin, na = "n/a") %>%
     janitor::clean_names() %>%
     mutate(covid_19_community_level = tolower(covid_19_community_level)) %>%
-    mutate(covid_19_community_level = factor(covid_19_community_level, levels = c("low", "medium", "high")))
+    mutate(covid_19_community_level = factor(covid_19_community_level,
+        levels = c("low", "medium", "high")
+    ))
 
 
 covid_levels <-
@@ -123,7 +125,6 @@ allstates <-
             fill = covid_19_community_level,
             group = group
         ),
-        # color = "white"
     ) +
     scale_fill_manual(values = levelcolor) +
     theme(legend.position = "none") +
@@ -131,13 +132,14 @@ allstates <-
 
 scplot <-
     ggplot(data = statemapdata %>% filter(state == "south carolina")) +
-    geom_polygon(aes(
-        x = long,
-        y = lat,
-        fill = covid_19_community_level,
-        group = group
-    ),
-    color = "white"
+    geom_polygon(
+        aes(
+            x = long,
+            y = lat,
+            fill = covid_19_community_level,
+            group = group
+        ),
+        color = "white"
     ) +
     scale_x_continuous(limit = c(-85, -77)) +
     scale_y_continuous(limit = c(32, 35.5)) +
@@ -145,29 +147,33 @@ scplot <-
     theme(legend.position = "none") +
     coord_fixed(1.4)
 
-ggsave("healthdata/us_map_covidlevel.png", width = 6, height = 12, plot = allstates / scplot)
+ggsave("healthdata/us_map_covidlevel.png", width = 6, height = 12,
+    plot = allstates / scplot)
 
 healthdata %>%
     group_by(county) %>%
     slice_max(date_updated) %>%
     ungroup() %>%
     count(covid_19_community_level) %>%
-    ggplot() + aes(covid_19_community_level, n, fill = covid_19_community_level) +
-    scale_fill_manual(values = levelcolor) + geom_col()
+    ggplot() +
+    aes(covid_19_community_level, n, fill = covid_19_community_level) +
+    scale_fill_manual(values = levelcolor) +
+    geom_col()
 
 country_health_data <-
     healthdata %>%
     mutate(date = as.Date(date_updated)) %>%
     mutate(
         total_covid_cases = covid_cases_per_100k / 1e5 * county_population,
-        total_hospital_admissions = covid_hospital_admissions_per_100k / 1e5 * county_population
+        total_hospital_admissions = covid_hospital_admissions_per_100k / 1e5 * county_population # nolint
     ) %>%
     group_by(date) %>%
-    summarize(across(
-        c(starts_with("total"), county_population),
-        ~ sum(.x, na.rm = TRUE)
-    ),
-    .groups = "drop"
+    summarize(
+        across(
+            c(starts_with("total"), county_population),
+            ~ sum(.x, na.rm = TRUE)
+        ),
+        .groups = "drop"
     ) %>%
     mutate(across(starts_with("total"),
         ~ .x / county_population * 1e5,
@@ -207,30 +213,6 @@ country_health_data %>%
 
 ggsave("healthdata/country-wide-assessment.png", width = 8, height = 5)
 
-
-# p_5 <- healthdata %>%
-#     mutate(date = as.Date(date_updated)) %>%
-#     ggplot(aes(x = date, y = covid_cases_per_100k, group = county_fips)) + 
-#     geom_line(alpha = .1) + 
-#     # scale_y_continuous(limits = c(0, 500)) + 
-#     coord_cartesian(ylim = c(0, 500)) +
-#     geom_smooth(aes(group = NULL), method = "loess", color = "white",se = FALSE) + 
-#     labs(x = "",
-#         y = "New COVID-19 cases\nper week per 100k")
-
-
-# p_6 <- healthdata %>%
-#     mutate(date = as.Date(date_updated)) %>%
-#     ggplot(aes(x = date, y = covid_hospital_admissions_per_100k, group = county_fips)) + 
-#     geom_line(alpha = .1) + 
-#     # scale_y_continuous(limits = c(0, 500)) + 
-#     coord_cartesian(ylim = c(0, 30)) +
-#     geom_smooth(aes(group = NULL), method = "loess", color = "white",se = FALSE) + 
-#     labs(x = "",
-#         y = "New COVID-19 hospital admission\nper week per 100k")
-
-# ggsave("healthdata/bigsmooth.png", plot = p_5 + p_6)
-
 covid_state_data <-
     healthdata %>%
     mutate(date = as.Date(date_updated)) %>%
@@ -246,12 +228,17 @@ covid_state_data <-
     ) %>%
     relocate(county, state, covid_19_community_level) %>%
     arrange(date) %>%
-    mutate(across(ends_with("per_100k"), ~ . * county_population / 1e5, .names = "{col}_total")) %>%
+    mutate(across(ends_with("per_100k"),
+        ~ . * county_population / 1e5,
+        .names = "{col}_total"
+    )) %>%
     group_by(date, state) %>%
-    summarize(covid_cases = sum(covid_cases_per_100k_total),
-              covid_hospital = sum(covid_hospital_admissions_per_100k_total),
-              state_population = sum(county_population),
-              .groups = "drop") %>%
+    summarize(
+        covid_cases = sum(covid_cases_per_100k_total),
+        covid_hospital = sum(covid_hospital_admissions_per_100k_total),
+        state_population = sum(county_population),
+        .groups = "drop"
+    ) %>%
     mutate(across(starts_with("covid"), ~ . / state_population * 1e5))
 
 covid_state_data %>%
@@ -264,19 +251,25 @@ covid_state_data %>%
         x = NULL,
         y = "Total new cases\nper week per 100k",
         title = "USA-Wide COVID assessment"
-    ) + 
+    ) +
     geom_smooth(aes(group = NULL), se = FALSE)
 
 covid_assess <- function(covid, hospital) {
-    if (is.na(covid) | is.na(hospital)) return(NA)
+    if (is.na(covid) | is.na(hospital)) {
+        return(NA)
+    }
 
     ass <- "no"
 
-    if (covid > 200 & hospital > 10) ass <- "high"
-    else if (covid > 200 & hospital < 10) ass <- "medium"
-    else if (covid < 200 & hospital < 15) ass <- "medium"
-    else if (covid < 200 & hospital > 15) ass <- "high"
-    else if (covid < 200 & hospital < 10) ass <- "low"
+    if (covid > 200 & hospital > 10) {
+        ass <- "high"
+    } else if (covid > 200 & hospital < 10) {
+        ass <- "medium"
+    } else if (covid < 200 & hospital < 15) {
+        ass <- "medium"
+    } else if (covid < 200 & hospital > 15) {
+        ass <- "high"
+    } else if (covid < 200 & hospital < 10) ass <- "low"
 
     return(ass)
 }
@@ -286,11 +279,11 @@ state_latest <-
     group_by(state) %>%
     slice_max(date, n = 1) %>%
     mutate(assessment = covid_assess(covid_cases, covid_hospital)) %>%
-     mutate(state = tolower(state))
+    mutate(state = tolower(state))
 
 statemapdata <- as_tibble(map_data("state")) %>%
     rename(state = region, county = subregion) %>%
-    inner_join(state_latest, by ="state")
+    inner_join(state_latest, by = "state")
 
 allusa <-
     ggplot(data = statemapdata) +
@@ -301,7 +294,6 @@ allusa <-
             fill = assessment,
             group = group
         ),
-        # color = "white"
     ) +
     scale_fill_manual(values = levelcolor) +
     theme(legend.position = "none") +
